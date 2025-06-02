@@ -10,7 +10,7 @@ interface BoardContextType {
   setError: (error: string | null) => void;
 }
 
-const BoardContext = createContext<BoardContextType | undefined>(undefined);
+export const BoardContext = createContext<BoardContextType | undefined>(undefined);
 
 export const BoardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [board, setBoard] = useState<Board | null>(null);

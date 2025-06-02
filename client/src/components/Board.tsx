@@ -1,7 +1,8 @@
 import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import { DragDropContext } from '@hello-pangea/dnd';
-import { useBoard } from '../context/BoardContext';
+import type { DropResult } from '@hello-pangea/dnd';
+import { useBoard } from '../hooks/useBoard';
 import type { Lane as LaneType, Task, Board as BoardType } from '../types';
 import Lane from './Lane';
 import { moveTask, getBoardById } from '../services/api';
@@ -98,7 +99,7 @@ const Board: React.FC<BoardProps> = ({ selectedBoard }) => {
     loadBoard();
   }, [selectedBoard, setBoard]);
 
-  const handleDragEnd = async (result: any) => {
+  const handleDragEnd = async (result: DropResult) => {
     if (!result.destination || !board) return;
 
     const sourceIndex = result.source.index;
@@ -231,7 +232,8 @@ const Board: React.FC<BoardProps> = ({ selectedBoard }) => {
     return () => {
       sseService.disconnect();
     };
-  }, [board?._id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board]);
 
   if (loading) {
     return <LoadingMessage>Loading board...</LoadingMessage>;

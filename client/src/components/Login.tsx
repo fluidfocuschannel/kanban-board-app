@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const LoginContainer = styled.div`
   display: flex;
@@ -154,8 +154,15 @@ const Login: React.FC = () => {
       } else {
         await register(formData.username, formData.email, formData.password, formData.role);
       }
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'An error occurred');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error && 'response' in error && 
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data &&
+        typeof error.response.data.message === 'string'
+        ? error.response.data.message
+        : 'An error occurred';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

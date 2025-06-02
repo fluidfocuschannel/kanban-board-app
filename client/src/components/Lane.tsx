@@ -105,7 +105,7 @@ const Lane: React.FC<LaneProps> = ({ lane, onTaskAdded }) => {
 
   const handleTaskSubmit = async (taskData: Partial<Task>) => {
     try {
-      const response = await createTask(taskData);
+      const response = await createTask(taskData as Omit<Task, '_id'>);
       onTaskAdded(response.data);
       setTaskModalOpen(false);
     } catch (error) {
