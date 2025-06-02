@@ -5,6 +5,7 @@ import cors from 'cors';
 import { EventEmitter } from 'events';
 import boardRoutes from './routes/board.routes';
 import taskRoutes from './routes/task.routes';
+import authRoutes from './routes/auth.routes';
 import { ITask } from './models/Task';
 
 dotenv.config();
@@ -55,6 +56,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/tasks', taskRoutes);
 

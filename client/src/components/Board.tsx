@@ -1,10 +1,10 @@
 import styled from 'styled-components';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DragDropContext } from '@hello-pangea/dnd';
 import { useBoard } from '../context/BoardContext';
-import type { Lane as LaneType, Task } from '../types';
+import type { Lane as LaneType, Task, Board as BoardType } from '../types';
 import Lane from './Lane';
-import { moveTask } from '../services/api';
+import { moveTask, getBoardById } from '../services/api';
 import { sseService } from '../services/sse';
 
 const BoardContainer = styled.div`
@@ -60,8 +60,43 @@ const LanesContainer = styled.div`
   }
 `;
 
-const Board: React.FC = () => {
+const LoadingMessage = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  font-size: 1.2rem;
+  color: #666;
+`;
+
+interface BoardProps {
+  selectedBoard?: BoardType | null;
+}
+
+const Board: React.FC<BoardProps> = ({ selectedBoard }) => {
   const { board, setBoard } = useBoard();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Load the selected board data
+  useEffect(() => {
+    const loadBoard = async () => {
+      if (selectedBoard) {
+        setLoading(true);
+        try {
+          const response = await getBoardById(selectedBoard._id);
+          setBoard(response.data);
+        } catch (error) {
+          setError('Failed to load board');
+          console.error('Error loading board:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadBoard();
+  }, [selectedBoard, setBoard]);
 
   const handleDragEnd = async (result: any) => {
     if (!result.destination || !board) return;
@@ -116,7 +151,9 @@ const Board: React.FC = () => {
       console.error('Error moving task:', error);
       // TODO: Revert the optimistic update if the API call fails
     }
-  };  const handleTaskAdded = (task: Task) => {
+  };
+
+  const handleTaskAdded = (task: Task) => {
     if (!board) return;
 
     const newLanes = board.lanes.map(lane => {
@@ -196,11 +233,20 @@ const Board: React.FC = () => {
     };
   }, [board?._id]);
 
-  if (!board) return null;
+  if (loading) {
+    return <LoadingMessage>Loading board...</LoadingMessage>;
+  }
+
+  if (error) {
+    return <LoadingMessage>Error: {error}</LoadingMessage>;
+  }
+
+  if (!board) {
+    return <LoadingMessage>No board selected</LoadingMessage>;
+  }
 
   return (
     <BoardContainer>
-      <h1>{board.name}</h1>
       <DragDropContext onDragEnd={handleDragEnd}>
         <LanesContainer>
           {board.lanes.map((lane: LaneType) => (

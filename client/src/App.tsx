@@ -1,43 +1,61 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { BoardProvider, useBoard } from './context/BoardContext';
 import { GlobalStyle } from './styles/GlobalStyle';
 import Board from './components/Board';
-import { getAllBoards } from './services/api';
+import Login from './components/Login';
+import Header from './components/Header';
+import Dashboard from './components/Dashboard';
+import type { Board as BoardType } from './types';
 
-const BoardContent = () => {
-  const { setBoard, loading, setLoading, error, setError } = useBoard();
+const AppContent = () => {
+  const { user, loading } = useAuth();
+  const [currentView, setCurrentView] = useState<'dashboard' | 'board'>('dashboard');
+  const [selectedBoard, setSelectedBoard] = useState<BoardType | null>(null);
 
-  useEffect(() => {
-    const fetchBoard = async () => {
-      try {
-        setLoading(true);
-        const response = await getAllBoards();
-        if (response.data.length > 0) {
-          setBoard(response.data[0]); // For now, just use the first board
-        }
-      } catch (error) {
-        setError('Failed to fetch board data');
-        console.error('Error fetching board:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleBoardSelect = (board: BoardType) => {
+    setSelectedBoard(board);
+    setCurrentView('board');
+  };
 
-    fetchBoard();
-  }, [setBoard, setLoading, setError]);
+  const handleBackToDashboard = () => {
+    setCurrentView('dashboard');
+    setSelectedBoard(null);
+  };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  
-  return <Board />;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
+  return (
+    <>
+      <Header 
+        onBoardCreated={handleBackToDashboard}
+        showBackButton={currentView === 'board'}
+        onBackClick={handleBackToDashboard}
+        currentBoard={selectedBoard}
+      />
+      {currentView === 'dashboard' ? (
+        <Dashboard onBoardSelect={handleBoardSelect} />
+      ) : (
+        <BoardProvider>
+          <Board selectedBoard={selectedBoard} />
+        </BoardProvider>
+      )}
+    </>
+  );
 };
 
 function App() {
   return (
-    <BoardProvider>
+    <AuthProvider>
       <GlobalStyle />
-      <BoardContent />
-    </BoardProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
