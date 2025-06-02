@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { BoardProvider, useBoard } from './context/BoardContext';
+import { BoardProvider } from './context/BoardContext';
 import { GlobalStyle } from './styles/GlobalStyle';
 import Board from './components/Board';
 import Login from './components/Login';

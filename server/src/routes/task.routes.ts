@@ -40,7 +40,8 @@ router.put('/:id', async (req: Request, res: Response) => {
       { new: true }
     );
     if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
+      res.status(404).json({ message: 'Task not found' });
+      return;
     }
     eventEmitter.emit('taskUpdate', { task });
     res.json(task);
@@ -59,7 +60,8 @@ router.put('/:id/move', async (req: Request, res: Response) => {
       { new: true }
     );
     if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
+      res.status(404).json({ message: 'Task not found' });
+      return;
     }
     eventEmitter.emit('taskUpdate', { task, laneId, position });
     res.json(task);
@@ -73,7 +75,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);
     if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
+      res.status(404).json({ message: 'Task not found' });
+      return;
     }
     eventEmitter.emit('taskDelete', { task });
     res.json({ message: 'Task deleted successfully' });
